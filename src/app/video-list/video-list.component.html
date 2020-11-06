@@ -1,7 +1,7 @@
 <ul>
   <li *ngFor="let item of vodList">
     <div class="videobox">
-      <a [routerLink]="['player', item.id]">
+      <a routerLink="/player/{{item.id}}">
         <img [src]="item.img"></a>
       <p>{{ item.title }}</p>
     </div>

@@ -1,22 +1,22 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 
+import { FormsModule } from '@angular/forms'
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { VideoListComponent } from './video-list/video-list.component';
 import { VideoDisplayComponent } from './video-display/video-display.component';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { SampleComponent } from './sample/sample.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     VideoListComponent,
-    VideoDisplayComponent,
-    SampleComponent
+    VideoDisplayComponent
   ],
   imports: [
     BrowserModule,
+    FormsModule,
     AppRoutingModule,
     FontAwesomeModule
   ],

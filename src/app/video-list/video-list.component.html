@@ -1,33 +1,9 @@
 <ul>
-  <li>
+  <li *ngFor="let item of vodList">
     <div class="videobox">
-      <a target="_blank" href="https://www.youtube.com/watch?v=6b5AaRW5110">
-        <img src="https://i.ytimg.com/vi/6b5AaRW5110/mqdefault.jpg"></a>
-      <p>Floatplane Alpha Launch Date SET!! - WAN Show Feb. 23 2018</p>
-    </div>
-  </li>
-
-  <li>
-    <div class="videobox">
-      <a target="_blank" href="https://www.youtube.com/watch?v=6b5AaRW5110">
-        <img src="https://i.ytimg.com/vi/6b5AaRW5110/mqdefault.jpg"></a>
-      <p>Floatplane Alpha Launch Date SET!! - WAN Show Feb. 23 2018</p>
-    </div>
-  </li>
-
-  <li>
-    <div class="videobox">
-      <a target="_blank" href="https://www.youtube.com/watch?v=6b5AaRW5110">
-        <img src="https://i.ytimg.com/vi/6b5AaRW5110/mqdefault.jpg"></a>
-      <p>Floatplane Alpha Launch Date SET!! - WAN Show Feb. 23 2018</p>
-    </div>
-  </li>
-
-  <li>
-    <div class="videobox">
-      <a target="_blank" href="https://www.youtube.com/watch?v=6b5AaRW5110">
-        <img src="https://i.ytimg.com/vi/6b5AaRW5110/mqdefault.jpg"></a>
-      <p>Floatplane Alpha Launch Date SET!! - WAN Show Feb. 23 2018</p>
+      <a [routerLink]="['player', item.id]">
+        <img [src]="item.img"></a>
+      <p>{{ item.title }}</p>
     </div>
   </li>
 </ul>

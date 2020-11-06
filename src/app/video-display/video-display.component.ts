@@ -1,5 +1,7 @@
-import { Component, OnInit } from '@angular/core';
-import { faVolumeUp, faVolumeDown, faVolumeMute } from '@fortawesome/free-solid-svg-icons';
+import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
+import { Router, ActivatedRoute, ParamMap } from '@angular/router';
+import { faVolumeUp, faVolumeDown, faVolumeMute, faWindowMaximize, faExpand } from '@fortawesome/free-solid-svg-icons';
+import { VideoListService } from '../video-list.service';
 
 declare var Hls;
 
@@ -10,14 +12,6 @@ declare var Hls;
 })
 export class VideoDisplayComponent implements OnInit {
   video: HTMLMediaElement;
-
-  volumeButton: HTMLElement;
-  volumeIcons: NodeListOf<Element>;
-  volumeMute: HTMLElement;
-  volumeLow: HTMLElement;
-  volumeHigh: HTMLElement;
-  volume: HTMLInputElement;
-
   duration: string;
   currentTime: string;
   skipToTooltip: number;
@@ -31,17 +25,48 @@ export class VideoDisplayComponent implements OnInit {
   faVolumeUp = faVolumeUp;
   faVolumeDown = faVolumeDown;
   faVolumeMute = faVolumeMute;
+  faWindowMaximize = faWindowMaximize;
+  faExpand = faExpand;
+
   faVolumeUpToggle = false;
   faVolumeDownToggle = true;
   faVolumeMuteToggle = true;
 
   volumeButtonTitle: string;
+  volume = 1;
+  volumeAtMute: number;
 
-  constructor() { }
+  videoList: any[];
+  videoId: string;
+  next: number;
+
+  @ViewChild("videoContainer") videoContainer: ElementRef;
+
+  constructor(
+    private videoListService: VideoListService,
+    private route: ActivatedRoute,
+    private router: Router
+  ) {
+    this.videoList = videoListService.getVideoList();
+  }
 
   ngOnInit(): void {
-    this.loadElementRefs();
-    this.loadVideo('https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8')
+    this.route.params.subscribe(params => {
+      this.videoId = params['video_id'];
+      const videoItem = this.videoList.find((e, i) => {
+        this.next = i + 1;
+        return e.id === this.videoId
+      });
+      this.videoPlay(videoItem.url);
+    });
+  }
+
+  videoTogglePlayPause(event: Event) {
+    this.video.paused ? this.video.play() : this.video.pause();
+  }
+
+  videoPlay(url: string) {
+    this.loadVideo(url)
       .then(video => {
         this.video = video;
         video.addEventListener('timeupdate', this.updateProgress.bind(this));
@@ -49,13 +74,13 @@ export class VideoDisplayComponent implements OnInit {
       .catch(err => console.log(err));
   }
 
-  videoTogglePlayPause(event: Event) {
-    this.video.paused ? this.video.play() : this.video.pause();
+  playNext() {
+    this.router.navigate(['player', this.videoList[this.next].id]);
   }
 
   loadVideo(url: string): Promise<HTMLMediaElement> {
     return new Promise((resolve, reject) => {
-      var video = document.getElementById('video') as HTMLMediaElement;
+      var video = document.getElementById('video') as HTMLMediaElement; // TODO: Use element ref instead
       const that = this;
 
       var videoSrc = url;
@@ -64,7 +89,7 @@ export class VideoDisplayComponent implements OnInit {
         video.addEventListener('loadedmetadata', function () {
           that.initializeVideo(video.duration);
           resolve(video);
-          // video.play();
+          video.play();
         });
 
         video.addEventListener('timeupdate',
@@ -77,7 +102,7 @@ export class VideoDisplayComponent implements OnInit {
         hls.on(Hls.Events.LEVEL_LOADED, () => {
           that.initializeVideo(hls.media.duration)
           resolve(hls.media as HTMLMediaElement);
-          // video.play();
+          video.play();
         })
 
         hls.media.addEventListener('timeupdate',
@@ -87,15 +112,6 @@ export class VideoDisplayComponent implements OnInit {
           });
       }
     });
-  }
-
-  loadElementRefs() {
-    this.volumeButton = document.getElementById('volume-button');
-    this.volumeIcons = document.querySelectorAll('.volume-button use');
-    this.volumeMute = document.querySelector('use[href="#volume-mute"]');
-    this.volumeLow = document.querySelector('use[href="#volume-low"]');
-    this.volumeHigh = document.querySelector('use[href="#volume-high"]');
-    this.volume = document.getElementById('volume') as HTMLInputElement;
   }
 
   initializeVideo(duration: number) {
@@ -140,7 +156,7 @@ export class VideoDisplayComponent implements OnInit {
     if (this.video.muted) {
       this.video.muted = false;
     }
-    this.video.volume = parseInt(this.volume.value);
+    this.video.volume = this.volume;
   }
 
   updateVolumeIcon() {
@@ -162,10 +178,18 @@ export class VideoDisplayComponent implements OnInit {
   toggleMute() {
     this.video.muted = !this.video.muted;
     if (this.video.muted) {
-      this.volume.setAttribute('data-volume', this.volume.value);
-      this.volume.value = '0';
+      this.volumeAtMute = this.volume;
+      this.volume = 0;
     } else {
-      this.volume.value = this.volume.dataset.volume;
+      this.volume = this.volumeAtMute;
+    }
+  }
+
+  toggleFullScreen() {
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+    } else {
+      this.videoContainer.nativeElement.requestFullscreen();
     }
   }
 }
